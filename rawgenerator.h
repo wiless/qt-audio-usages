@@ -12,10 +12,11 @@ public:
   QAudioFormat fmt;
   QFile file;
   QByteArray internal;
+
 public:
   explicit RawGenerator(QObject *parent = 0);
 
-
+  void init(QString fname);
   qint64 readData(char* data, qint64 maxSize);
   qint64 writeData(const char *data, qint64 len);
   bool isSequential(){return true;}
@@ -25,7 +26,7 @@ public:
 
 
 signals:
-  
+  void plotSignal(char*data,qint64 Size);
 public slots:
   
 };

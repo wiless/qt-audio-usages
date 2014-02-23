@@ -27,11 +27,14 @@ public:
   ~Dialog();
   
 private slots:
-  void on_pushButton_clicked();
 
   void on_toolButton_clicked();
 
-  void on_pushButton_2_clicked();
+
+  void on_btnMethod1_clicked();
+
+  void on_btnMethod2_clicked();
+  void plotValues(char* data, qint64 maxsize);
 
 private:
   Ui::Dialog *ui;

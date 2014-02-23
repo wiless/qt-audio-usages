@@ -11,13 +11,7 @@ RawGenerator::RawGenerator(QObject *parent) :
 
     QIODevice::setOpenMode(QIODevice::ReadOnly);
 //     file.setFileName("jhund2.wav");
-     file.setFileName("temp.wav");
-    if(!file.open(QIODevice::ReadOnly))
-        qDebug() << "Unable to open file";
 
-
-    file.seek(44);
-    internal=file.readAll();
 
 //    int Nsamples=16384*4;
 //    internal.resize(Nsamples*sizeof(quint16));
@@ -34,12 +28,28 @@ RawGenerator::RawGenerator(QObject *parent) :
 
 }
 
+void RawGenerator::init(QString filename)
+{
+  file.setFileName(filename);
+
+ if(!file.open(QIODevice::ReadOnly))
+   {
+     qDebug() << "Unable to open file";
+     return ;
+   }
+
+//    file.seek(44);
+ internal=file.readAll();
+ internal.remove (0,44);
+ open (QIODevice::ReadOnly);
+}
+
 qint64 RawGenerator::readData(char *data, qint64 maxSize)
 {
       static qint64 counter;
 
       qint64 possiblebytes=(internal.size()-counter);
-      qDebug() << " Requested " << maxSize << "   Avaialble : " << possiblebytes;
+//      qDebug() << " Requested " << maxSize << "   Avaialble : " << possiblebytes;
 
       if(possiblebytes>=maxSize)
       {
@@ -53,36 +63,20 @@ qint64 RawGenerator::readData(char *data, qint64 maxSize)
           counter=0;
           memcpy(data+possiblebytes,internal.data()+counter,maxSize-possiblebytes);
           counter+=maxSize-possiblebytes;
-          qDebug() << " You RESET" << maxSize;
 
+          qDebug() << " You RESET" << maxSize;
       }
 
+        emit plotSignal (data,maxSize);
+       return maxSize;
 
-     return maxSize;
-
-//      qDebug() << " You will never see this";
-
-
-//      double fc=100; ///10Hz
-//      int period=1.0/fc;
-//      double Ts=1.0/fmt.sampleRate ();
-//      int mysize=(maxSize<1024)?maxSize:1024;
-//      if(counter==0)
-//      {
-
-//          qDebug() << " Frequency " << fc;
-//          qDebug() << " Ts " << Ts;
-//          qDebug() << " fmt.sampleRate() " << fmt.sampleRate();
-//          qDebug() << " Audio Duration " << Ts*maxSize;
-
-//      }
       QString str;
       qDebug () << " Current File pos " << file.pos();
       qint64 bytesreadable=file.bytesAvailable();
       qint64 possible=qMin(bytesreadable,maxSize);
 
       qint64 result= file.read(data,possible);
-      qint64 filepos=file.pos();
+
       if(possible!=maxSize)
       {
           file.seek(0);
